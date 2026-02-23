@@ -1,0 +1,53 @@
+{
+  "name": "CloudBack DevContainer",
+  
+  "image": "debian:bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "vscode",
+      "userUid": "1000",
+      "userGid": "1000"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2.14.0": {}
+  },
+  "postCreateCommand": "./.devcontainer/post-create.sh",
+
+  "forwardPorts": [
+    80,
+    443,
+    1080,
+    10443,
+    4566,
+    8080, 3000
+  ],
+
+  "portsAttributes": {
+    "10080": {
+      "visibility": "public"
+    },
+    "10443": {
+      "visibility": "public"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+          "ms-azuretools.vscode-docker",
+
+          "github.copilot",
+          "github.copilot-chat",
+
+          "aws-scripting-guy.cform",
+
+          "ms-python.python",
+          
+          "mkhl.direnv",
+
+          "jetpack-io.devbox"
+        
+      ]
+    }
+  },
+  "remoteUser": "vscode"
+}
