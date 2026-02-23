@@ -10,7 +10,7 @@
     },
     "ghcr.io/devcontainers/features/docker-in-docker:2.14.0": {}
   },
-  "postCreateCommand": "./.devcontainer/post-create.sh",
+  "postCreateCommand": "source ./.devcontainer/post-create.sh",
 
   "forwardPorts": [
     80,
