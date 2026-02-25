@@ -1,0 +1,4 @@
+processes:
+  cloudback:
+    command: quarkus dev
+    working_dir: cloudback

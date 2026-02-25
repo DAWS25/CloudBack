@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# System Info
+echo "Running post-create.sh in devcontainer setup"
+echo "PWD: $PWD"
+echo "USER: $USER"
+
 # Package manager detection (apt or yum only)
 if command -v apt-get &> /dev/null; then
     echo "Using apt-get as package manager."
@@ -78,7 +83,6 @@ else
     echo "iptables is unavailable; 443 -> 10443 redirect not configured."
 fi
 
-# System Info
-echo "PWD: $(pwd)"
+
 
 echo post-create.sh executed successfully.

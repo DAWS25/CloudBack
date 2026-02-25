@@ -8,17 +8,17 @@
       "userUid": "1000",
       "userGid": "1000"
     },
-    "ghcr.io/devcontainers/features/docker-in-docker:2.14.0": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2.16.0": {},
+    "ghcr.io/audacioustux/devcontainers/graalvm:1":{},
+    "ghcr.io/devcontainers-community/features/direnv:1":{}
   },
-  "postCreateCommand": "source ./.devcontainer/post-create.sh",
+  "postCreateCommand": "./.devcontainer/post-create.sh",
 
   "forwardPorts": [
     80,
     443,
-    1080,
-    10443,
-    4566,
-    8080, 3000
+    10080,
+    10443
   ],
 
   "portsAttributes": {
@@ -41,6 +41,8 @@
           "aws-scripting-guy.cform",
 
           "ms-python.python",
+
+          "vscjava.vscode-java-pack",
           
           "mkhl.direnv",
 
