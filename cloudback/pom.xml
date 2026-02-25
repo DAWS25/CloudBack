@@ -4,19 +4,26 @@
     <groupId>cloudback</groupId>
     <artifactId>cloudback</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>quarkus</packaging>
+    <packaging>jar</packaging>
     <name>cloudback</name>
 
     <properties>
+        <!-- https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
         <compiler-plugin.version>3.14.1</compiler-plugin.version>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- https://central.sonatype.com/artifact/io.quarkus.platform/quarkus-bom -->
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.31.4</quarkus.platform.version>
+        <quarkus.platform.version>3.18.1</quarkus.platform.version>
         <skipITs>true</skipITs>
-        <surefire-plugin.version>3.5.4</surefire-plugin.version>
+        <!-- https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+        <surefire-plugin.version>3.5.2</surefire-plugin.version>
+        <!-- https://central.sonatype.com/artifact/org.apache.commons/commons-configuration2 -->
+        <commons-configuration2.version>2.11.0</commons-configuration2.version>
+        <!-- https://central.sonatype.com/artifact/commons-beanutils/commons-beanutils -->
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
     </properties>
 
     <repositories>
@@ -66,7 +73,7 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit</artifactId>
+            <artifactId>quarkus-junit5</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -74,7 +81,16 @@
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
-        
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-configuration2</artifactId>
+            <version>${commons-configuration2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>${commons-beanutils.version}</version>
+        </dependency>
       
     </dependencies>
 
@@ -85,6 +101,15 @@
                 <artifactId>quarkus-maven-plugin</artifactId>
                 <version>${quarkus.platform.version}</version>
                 <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>

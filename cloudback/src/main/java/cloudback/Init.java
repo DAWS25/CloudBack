@@ -1,6 +1,7 @@
 package cloudback;
 
 import io.quarkus.runtime.StartupEvent;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
@@ -11,13 +12,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static cloudback.Logs.*;
 
+@ApplicationScoped
 public class Init {
-    @Inject CBConfig config;
+    @Inject ConfigManager config;
+    @Inject RuntimeState runtimeState;
 
     // matches: "Type: AWS::Something" (allow whitespace)
     private static final Pattern CF_TYPE_PATTERN = Pattern.compile("(?m)^\\s*Type\\s*:\\s*AWS::");
@@ -28,6 +33,10 @@ public class Init {
 
     public void init(@Observes StartupEvent ev) {
         log().trace("CloudBack initialization started");
+        if (runtimeState.getExecutionId() == null || runtimeState.getExecutionId().isEmpty()) {
+            runtimeState.setExecutionId(UUID.randomUUID().toString());
+        }
+        log().debugf("Execution Id: %s", runtimeState.getExecutionId());
         var files = lookupSauceFiles();
         log().debugf("Sauce files found [%s]:", files.size());
         files.forEach(f -> log().debugf("  %s", f.toAbsolutePath()));
@@ -35,7 +44,7 @@ public class Init {
     }
 
     private List<Path> lookupSauceFiles() {
-        Path basePath = config.basePath();
+        Path basePath = config.getPath("cb.base-path", ".");
         Path abs = basePath.toAbsolutePath();
 
         log().infof("Looking up CloudFormation templates in %s", abs);
@@ -59,11 +68,10 @@ public class Init {
                     try {
                         if (looksLikeCloudFormationTemplate(p)) {
                             found.add(p);
-                            log().debugf("Found CloudFormation template: %s", p.toAbsolutePath());
+                            log().debugf("Found CloudFormation template: %s", sanitizeForLog(p.toAbsolutePath().toString()));
                         }
-                    } catch (Exception e) {
-                        // continue scanning other files even if one fails
-                        log().warnf("Failed to inspect %s: %s", p.toAbsolutePath(), e.toString());
+                    } catch (IOException e) {
+                        log().warnf("Failed to inspect %s: %s", sanitizeForLog(p.toAbsolutePath().toString()), e.getMessage());
                     }
                 });
         } catch (IOException e) {
@@ -80,16 +88,24 @@ public class Init {
     }
 
     private boolean isYamlFile(Path p) {
-        String name = p.getFileName().toString().toLowerCase();
+        String name = p.getFileName().toString().toLowerCase(Locale.ROOT);
         return name.endsWith(".yml") || name.endsWith(".yaml");
     }
 
     private boolean looksLikeCloudFormationTemplate(Path p) throws IOException {
+        // Validate path to prevent traversal
+        Path normalized = p.toAbsolutePath().normalize();
+        Path baseNormalized = config.getPath("cb.base-path", ".").toAbsolutePath().normalize();
+        if (!normalized.startsWith(baseNormalized)) {
+            log().warnf("Path traversal attempt detected: %s", sanitizeForLog(p.toString()));
+            return false;
+        }
+
         // quick size gate
         long size = Files.size(p);
         if (size <= 0) return false;
         if (size > MAX_BYTES_TO_SCAN) {
-            log().tracef("Skipping large file (%d bytes): %s", size, p.toAbsolutePath());
+            log().tracef("Skipping large file (%d bytes): %s", size, sanitizeForLog(p.toAbsolutePath().toString()));
             return false;
         }
 
@@ -98,21 +114,25 @@ public class Init {
             String line;
             int lines = 0;
 
-            while ((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null && lines < MAX_LINES_TO_SCAN) {
                 lines++;
                 // fast pre-check avoids regex cost most of the time
                 if (line.contains("Type") && line.contains("AWS::")) {
                     if (CF_TYPE_PATTERN.matcher(line).find()) return true;
                     // if "Type:" is indented or split oddly, regex on line still catches common cases
                 }
+            }
 
-                if (lines >= MAX_LINES_TO_SCAN) {
-                    log().tracef("Stopping scan after %d lines: %s", MAX_LINES_TO_SCAN, p.toAbsolutePath());
-                    break;
-                }
+            if (lines >= MAX_LINES_TO_SCAN) {
+                log().tracef("Stopped scan after %d lines: %s", MAX_LINES_TO_SCAN, sanitizeForLog(p.toAbsolutePath().toString()));
             }
         }
 
         return false;
+    }
+
+    private String sanitizeForLog(String input) {
+        if (input == null) return "null";
+        return input.replace("\n", "").replace("\r", "");
     }
 }
