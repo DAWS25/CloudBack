@@ -4,7 +4,8 @@
     "quarkus@latest",
     "graalvm-ce@latest",
     "mkcert@latest",
-    "maven@latest"
+    "maven@latest",
+    "direnv@latest"
   ],
   "shell": {
     "init_hook": [

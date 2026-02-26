@@ -1,4 +1,4 @@
-package cloudback;
+package cb;
 
 import io.quarkus.vertx.web.RouteFilter;
 import jakarta.enterprise.context.control.ActivateRequestContext;

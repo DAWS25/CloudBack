@@ -1,4 +1,4 @@
-package cloudback;
+package cb;
 
 import org.jboss.logging.Logger;
 

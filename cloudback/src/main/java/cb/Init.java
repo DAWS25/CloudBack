@@ -1,4 +1,4 @@
-package cloudback;
+package cb;
 
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,12 +17,14 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static cloudback.Logs.*;
+import cb.config.CloudBackConfig;
+
+import static cb.Logs.*;
 
 @ApplicationScoped
 public class Init {
-    @Inject ConfigManager config;
-    @Inject RuntimeState runtimeState;
+    @Inject
+    CloudBackConfig config;
 
     // matches: "Type: AWS::Something" (allow whitespace)
     private static final Pattern CF_TYPE_PATTERN = Pattern.compile("(?m)^\\s*Type\\s*:\\s*AWS::");
@@ -33,10 +35,9 @@ public class Init {
 
     public void init(@Observes StartupEvent ev) {
         log().trace("CloudBack initialization started");
-        if (runtimeState.getExecutionId() == null || runtimeState.getExecutionId().isEmpty()) {
-            runtimeState.setExecutionId(UUID.randomUUID().toString());
-        }
-        log().debugf("Execution Id: %s", runtimeState.getExecutionId());
+        var executionId = config.getExecutionId();
+        log().debugf("Execution Id: %s", executionId);
+        log().debugf("Base Path: %s", config.getBasePath().toAbsolutePath());
         var files = lookupSauceFiles();
         log().debugf("Sauce files found [%s]:", files.size());
         files.forEach(f -> log().debugf("  %s", f.toAbsolutePath()));
@@ -44,7 +45,7 @@ public class Init {
     }
 
     private List<Path> lookupSauceFiles() {
-        Path basePath = config.getPath("cb.base-path", ".");
+        Path basePath = config.getBasePath();
         Path abs = basePath.toAbsolutePath();
 
         log().infof("Looking up CloudFormation templates in %s", abs);
@@ -95,7 +96,7 @@ public class Init {
     private boolean looksLikeCloudFormationTemplate(Path p) throws IOException {
         // Validate path to prevent traversal
         Path normalized = p.toAbsolutePath().normalize();
-        Path baseNormalized = config.getPath("cb.base-path", ".").toAbsolutePath().normalize();
+        Path baseNormalized = config.getBasePath().toAbsolutePath().normalize();
         if (!normalized.startsWith(baseNormalized)) {
             log().warnf("Path traversal attempt detected: %s", sanitizeForLog(p.toString()));
             return false;

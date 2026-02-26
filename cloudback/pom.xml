@@ -24,20 +24,11 @@
         <commons-configuration2.version>2.11.0</commons-configuration2.version>
         <!-- https://central.sonatype.com/artifact/commons-beanutils/commons-beanutils -->
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
+        <!-- https://central.sonatype.com/artifact/com.google.inject/guice -->
+        <guice.version>7.0.0</guice.version>
+        <!-- https://central.sonatype.com/artifact/com.github.f4b6a3/uuid-creator -->
+        <uuid-creator.version>6.0.0</uuid-creator.version>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>ossrh-snapshots</id>
-            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -48,13 +39,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-        <dependency>
-            <groupId>dev.tamboui</groupId>
-            <artifactId>tamboui-bom</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -90,6 +74,16 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>${commons-beanutils.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${guice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.f4b6a3</groupId>
+            <artifactId>uuid-creator</artifactId>
+            <version>${uuid-creator.version}</version>
         </dependency>
       
     </dependencies>
@@ -153,6 +147,7 @@
     </build>
 
     <profiles>
+        
         <profile>
             <id>native</id>
             <activation>
